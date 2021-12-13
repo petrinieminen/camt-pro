@@ -1,0 +1,34 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+Yesterday
+{% endblock %}
+{% block content %}
+<h2 class="text-center">Bank statements snug</h2>
+{% if data %}
+
+<table>
+    <thead>
+        <tr class="row-first" >
+            <th>Company Name</th>
+            <th>Banking Date</th>
+            <th>IBAN</th>
+            <th>Balance Difference</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in data %}
+        <tr>
+            <td>{{ d.Company_Name }}</td>
+            <td>{{ d.Banking_Date }}</td>
+            <td>{{ d.IBAN }}</td>
+            <td>{{ d.Balance_Difference }}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No statements for yesterday</p>
+{% endif %}
+
+{% endblock %}

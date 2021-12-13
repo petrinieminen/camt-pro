@@ -23,7 +23,7 @@ def get_yesterday():
     client = zeep.Client(wsdl=wsdl_location, transport=Transport(session=session))
 
 
-    today = date.today() - timedelta(days=5)
+    today = date.today() - timedelta(days=0)
     previous_workday = previous_working_day(today)
 
     demofilter = {

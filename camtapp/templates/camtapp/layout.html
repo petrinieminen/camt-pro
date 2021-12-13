@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>{% block title %}{% endblock %}</title>
+    {% load static %} 
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'camtapp\site.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'camtapp\css\bootstrap.css' %}" />
+    
+
+</head>
+
+<body>
+<div class="navbar navbar-dark bg-primary">
+    <a href="{% url 'home' %}" class="navbar-brand">Home</a>
+    <a href="{% url 'yesterdays_bank' %}" class="navbar-brand">Yesterday</a>
+    <a href="{% url 'yesterdays_bank_snug' %}" class="navbar-brand">Yesterday snug</a>
+</div>
+
+<div class="body-content">
+    {% block content %}
+    {% endblock %}
+    <hr/>
+    <footer>
+        <p>© 2021</p>
+    </footer>
+</div>
+</body>
+</html>
