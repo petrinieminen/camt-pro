@@ -10,9 +10,17 @@ from zeep.plugins import HistoryPlugin
 from datetime import date, timedelta
 import holidays
 from camtapp import config as config_module
+from camtapp.models import ApiResource
 
+
+def get_configs():
+    return ApiResource.objects.all()
 
 def get_yesterday():
+    
+    configs = get_configs()
+    for v in configs.values_list():
+        print("it's a " + v[3])
 
     session = Session()
     session.auth = HTTPBasicAuth(config_module.api_credentials.username, config_module.api_credentials.password)
@@ -50,6 +58,7 @@ def load_conf_file(config_file):
 
 def main():
     print(config_module.api_credentials.username)
+    print(get_configs())
     
 if __name__ == '__main__':
     main()
