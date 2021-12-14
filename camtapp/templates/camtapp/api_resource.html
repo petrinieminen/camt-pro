@@ -1,0 +1,16 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+New Api Resource
+{% endblock %}
+{% block content %}
+
+    <div class="row mb-3">
+    <form method="POST">
+
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+{% endblock %}
