@@ -36,12 +36,30 @@ def hello_there(request, name):
         }
     )
 
+def iban_filter(ibanfilter):
+    data = api.get_iban_filtered_statements(ibanfilter)
+    return data
+
+def balance_difference_filter():
+    data = api.get_balance_difference_statements()
+    return data
 
 def yesterdays_bank(request):
-    yesterday_data = api.get_yesterday()
+    if request.method == "POST":
+        if request.POST.get('IbanFilter', False):
+            data = iban_filter(request.POST["ibanfiltertext"])
+        elif request.POST.get('BalanceDifference', False):
+            data = balance_difference_filter()
+        else:
+            data = api.get_yesterday()
+    else:
+        print(request)
+        data = api.get_yesterday()
+
     return render(request,
     'camtapp/yesterday.html',
-    { 'data': yesterday_data})
+    { 'data': data})
+
 
 def yesterdays_bank_snug(request):
     yesterday_data = api.get_yesterday()
@@ -61,3 +79,26 @@ def api_resource(request):
             return redirect("home")
     else:
         return render(request, "camtapp/api_resource.html", {"form": form})
+
+
+def pretty_request(request):
+    headers = ''
+    for header, value in request.META.items():
+        if not header.startswith('HTTP'):
+            continue
+        header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
+        headers += '{}: {}\n'.format(header, value)
+
+    return (
+        '{method} HTTP/1.1\n'
+        'Content-Length: {content_length}\n'
+        'Content-Type: {content_type}\n'
+        '{headers}\n\n'
+        '{body}'
+    ).format(
+        method=request.method,
+        content_length=request.META['CONTENT_LENGTH'],
+        content_type=request.META['CONTENT_TYPE'],
+        headers=headers,
+        body=request.body,
+    )

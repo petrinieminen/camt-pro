@@ -3,6 +3,15 @@
 Yesterday
 {% endblock %}
 {% block content %}
+<form method="post">
+    {% csrf_token %}
+    <label for="ibanfiltertext">IBAN Filter:</label><br>
+    <input type="text" name="ibanfiltertext" value=""><br><br>
+    <input type="submit" name="IbanFilter" value="Iban Filter" />
+    <input type="submit" name="BalanceDifference" value="Balance difference" />
+    <input type="submit" name="ResetFilter" value="Reset Filter"/>
+</form>
+
 <h2>Bank statements</h2>
 {% if data %}
 
@@ -36,7 +45,11 @@ Yesterday
     </thead>
     <tbody>
         {% for d in data %}
+        {% if d.NAV_Account_Balance < 0 %}
+        <tr id="negative">
+        {% else %}
         <tr>
+        {% endif %}
             <td>{{ d.Company_Name }}</td>
             <td>{{ d.Banking_Date }}</td>
             <td>{{ d.IBAN }}</td>
@@ -58,7 +71,7 @@ Yesterday
             <td>{{ d.Other_CAMT_Entries_Matched }}</td>
             <td>{{ d.Other_CAMT_Entries_Status }}</td>
             <td>{{ d.CAMT_Balance }}</td>
-            <td>{{ d.NAV_Account_Balance }}</td>
+            <td>{{ d.NAV_Account_Balance }}</td>          
             <td>{{ d.Balance_Difference }}</td>
 
         </tr>
