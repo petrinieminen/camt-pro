@@ -23,7 +23,7 @@ table tr:hover td {
 table th, table td {
   color: #999;
   border: 1px solid #eee;
-  padding: 12px 35px;
+  padding: 5px 5px;
   border-collapse: collapse;
 }
 table th {
@@ -36,3 +36,7 @@ table th.last {
   border-right: none;
 }
 
+.filter-col{
+  padding-left:10px;
+  padding-right:10px;
+}

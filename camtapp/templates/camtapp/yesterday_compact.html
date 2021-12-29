@@ -1,0 +1,53 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+Yesterday
+{% endblock %}
+{% block content %}
+<form method="post">
+    {% csrf_token %}
+    <label for="ibanfiltertext">IBAN Filter:</label><br>
+    <input type="text" name="ibanfiltertext" value=""><br><br>
+    <input type="submit" name="IbanFilter" value="Iban Filter" />
+    <input type="submit" name="BalanceDifference" value="Balance difference" />
+    <input type="submit" name="ResetFilter" value="Reset Filter"/>
+
+
+</form>
+
+<h2 class="text-center">Bank statements compact list</h2>
+{% if data %}
+<div class="container-fluid h-100 ">
+    <div class="row justify-content-center h-100">
+        <div class="col">
+            <table>
+                <thead>
+                    <tr class="row-first" >
+                        <th>Company Name</th>
+                        <th>Banking Date</th>
+                        <th>IBAN</th>
+                        <th>Balance Difference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    <tr>
+                        <td>{{ d.Company_Name }}</td>
+                        <td>{{ d.Banking_Date }}</td>
+                        <td>{{ d.IBAN }}</td>
+                        <td>{{ d.Balance_Difference }}</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+    
+{% else %}
+<p>No statements for yesterday</p>
+{% endif %}
+
+{% endblock %}

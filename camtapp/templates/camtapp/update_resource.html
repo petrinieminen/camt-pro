@@ -1,0 +1,18 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+Update Api Resource
+{% endblock %}
+{% block content %}
+
+<h1>Update Api Resource</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <button type="submit" class="btn btn-primary">Update API resource</button>
+   
+</form>
+
+{% endblock %}

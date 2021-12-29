@@ -1,5 +1,5 @@
 import zeep
-
+import html
 import csv
 from dataclasses import fields
 from requests.auth import HTTPBasicAuth  # or HTTPDigestAuth, or OAuth1, etc.
@@ -17,9 +17,9 @@ from camtapp.models import ApiResource
 def get_configs():
     return ApiResource.objects.all()
 
-def open_session(location):
+def open_session(location, username, password):
     session = Session()
-    session.auth = HTTPBasicAuth(config_module.api_credentials.username, config_module.api_credentials.password)
+    session.auth = HTTPBasicAuth(username, password)
 
     wsdl_location = location
     client = zeep.Client(wsdl=wsdl_location, transport=Transport(session=session))
@@ -41,41 +41,101 @@ def get_iban_filtered_statements(iban):
 
 
 def get_balance_difference_statements():
-    locations = get_locations()
-
     all_data = []
-    for location in locations:
+    configs = get_configs()
 
-        client = open_session(location)
-        demofilter = {
-            "Field": "Balance_Difference",
-            "Criteria": "<>0"
-        }
+    for v in configs.values_list():
+
+        base_url = v[2]
+        service_name = v[3]
+        default_company = html.escape(v[4])
+        api_username = v[5]
+        api_pass = v[6]
+
+        companies = get_company_names(v)
+        for company in companies:
+            statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint
         
-        demo = client.service.ReadMultiple(demofilter, None, 1000)
-        all_data += demo
+            client = open_session(statement_url, api_username, api_pass)
+            today = date.today() - timedelta(days=0)
+            previous_workday = previous_working_day(today)
+
+            filter = [{
+                "Field": "G_L_Account_Balance_Matched",
+                "Criteria": False,                
+            }, {
+                "Field": "Closing_Balance_Date",
+                "Criteria": f"{previous_workday}"
+            }]
+            
+            print("We are getting non matched statements for " + company)
+            demo = client.service.ReadMultiple(filter, None, 1000)
+            if demo:
+                print("we have no match: ", demo)
+                all_data += demo
+            else:
+                print("all match")
 
     return all_data
+
 
 def get_locations():
     locations = []
     for l in fields(config_module.api_locations):
         locations.append(getattr(config_module.api_locations, l.name))
+
+
     return locations
 
+def get_location_names():
+    locations = []
+    configs = get_configs()
+    for v in configs.values_list():
+        locations.append(v[1])
+
+    return locations
+
+
+def get_company_names(config):
+    company_names = []
+
+    base_url = config[2]
+    service_name = config[3]
+    default_company = html.escape(config[4])
+    api_username = config[5]
+    api_pass = config[6]
+
+    settings_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.settings_endpoint
+    client = open_session(settings_url, api_username, api_pass)
+    filter = {
+        "Field": "Company_Name",
+        "Criteria": "<>''"
+    }
+    response = client.service.ReadMultiple(filter, None, 1000)
+
+    for row in response:
+        company_names.append(row["Company_Name"])
+
+    return company_names
+
 def get_yesterday():
-    
-    locations = get_locations()
+    all_data = []
+
+    statements = get_balance_difference_statements()
 
     configs = get_configs()
     for v in configs.values_list():
-        print("it's a " + v[3])
 
-    all_data = []
-    for location in locations:
-        print("current location: " + location)
-        client = open_session(location)
+        base_url = v[2]
+        service_name = v[3]
+        default_company = html.escape(v[4])
+        api_username = v[5]
+        api_pass = v[6]
 
+        report_url =  base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
+    
+        print("current location: " + report_url)
+        client = open_session(report_url, api_username, api_pass)
 
         today = date.today() - timedelta(days=0)
         previous_workday = previous_working_day(today)

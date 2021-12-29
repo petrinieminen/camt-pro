@@ -4,13 +4,61 @@ New Api Resource
 {% endblock %}
 {% block content %}
 
-    <div class="row mb-3">
-    <form method="POST">
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <h5 class="card-header">Add new API resource</h5>
+                <form method="POST">
 
-        {% csrf_token %}
-        {{ form.as_p }}
+                    {% csrf_token %}
+                    <table class="message_list">
+                        {{ form.as_table }}
+                    </table>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-    </form>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card">
+                <h5 class="card-header">Added API resources</h5>
+
+                {% if resources %}
+                <table class="message_list">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Api URL</th>
+                            <th>API Service</th>
+                            <th>Last Updated</th>
+                            <th>Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for message in resources %}
+                        <tr>
+                            <td>{{ message.company_name }}</td>
+                            <td>{{ message.api_base_url }}</td>
+                            <td>{{ message.api_service_name }}</td>
+                            <td>{{ message.log_date | date:'d M Y H:i:s' }}</td>
+
+                            <td>
+                                <a href="{% url 'update_resource' message.id %}"
+                                    class="btn btn-outline-primary btn-sm">UPDATE</a>
+                                <a href="{% url 'delete_resource' message.id %}"
+                                    class="btn btn-outline-danger btn-sm">DEL</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No Api resources have been added.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
