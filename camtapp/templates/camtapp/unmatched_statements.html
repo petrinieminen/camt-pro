@@ -1,0 +1,53 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+Unmatched Statements from Previous Workday
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col col-lg-2">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                <button class="btn btn-lg btn-primary" type="submit" name="BalanceDifference" value="BalanceDifference">Balance
+                    difference</button>
+                <button class="btn btn-lg btn-primary" type="submit" name="Unhandled" value="Unhandled">Unhandled</button>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="col-md-auto">
+        <div class="card text-white bg-dark">
+            {% if data %}
+            <h5 class="card-header">Thank you for waiting. Data fetch took {{ time_elapsed }}</h5>
+            <table class="message_list">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>IBAN</th>
+                        <th>Date</th>
+                        <th>Statement Balance</th>
+                        <th>ERP Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for statement in data %}
+                    <tr>
+                        <td>{{ statement.Company_Name }}</td>
+                        <td>{{ statement.IBAN }}</td>
+                        <td>{{ statement.Closing_Balance_Date }}</td>
+                        <td>{{ statement.Closing_Balance_Amount }}</td>
+                        <td>{{ statement.G_L_Account_Balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <h5 class="card-header">No statements / Press filter</h5>
+    {% endif %}
+</div>
+
+
+{% endblock %}

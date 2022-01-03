@@ -1,7 +1,10 @@
-tr#negative {
+ /*
+ tr#negative {
   background-color: red;
   }
 
+  
+  
 table {
   font-family: "Arial";
   margin: 25px auto;
@@ -10,6 +13,8 @@ table {
   border-bottom: 2px solid #00cccc;
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1), 0px 10px 20px rgba(0, 0, 0, 0.05), 0px 20px 20px rgba(0, 0, 0, 0.05), 0px 30px 20px rgba(0, 0, 0, 0.05);
 }
+
+
 
 
 table tr:hover {
@@ -26,12 +31,17 @@ table th, table td {
   padding: 5px 5px;
   border-collapse: collapse;
 }
+
+
 table th {
   background: #00cccc;
   color: #fff;
   text-transform: uppercase;
   font-size: 12px;
 }
+
+
+
 table th.last {
   border-right: none;
 }
@@ -40,3 +50,4 @@ table th.last {
   padding-left:10px;
   padding-right:10px;
 }
+*/

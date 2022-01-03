@@ -3,25 +3,34 @@
 Yesterday
 {% endblock %}
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    <label for="ibanfiltertext">IBAN Filter:</label><br>
-    <input type="text" name="ibanfiltertext" value=""><br><br>
-    <input type="submit" name="IbanFilter" value="Iban Filter" />
-    <input type="submit" name="BalanceDifference" value="Balance difference" />
-    <input type="submit" name="ResetFilter" value="Reset Filter"/>
+<div class="row">
+    <div class="col col-lg-2">
+        <div class="card text-white bg-dark">
+            <form method="post">
+                {% csrf_token %}
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="FI123456"
+                        aria-label="FI123456" aria-describedby="button-addon2" name="IbanFilter">
+                    <button class="btn btn-primary" type="submit" id="button-addon2">Filter Iban</button>
+                </div>
+                <input type="submit" name="BalanceDifference" value="Balance difference" />
+                <input type="submit" name="ResetFilter" value="Reset Filter" />
 
 
-</form>
+            </form>
+        </div>
+    </div>
 
-<h2 class="text-center">Bank statements compact list</h2>
-{% if data %}
-<div class="container-fluid h-100 ">
-    <div class="row justify-content-center h-100">
-        <div class="col">
-            <table>
+    <div class="col-md-auto">
+        <div class="card text-white bg-dark">
+            <h5 class="card-header">Bank statements, total {{ total_count }}!
+                Balance differs in {{ balance_difference_count }}.</h5>
+
+            {% if data %}
+
+            <table class="table table-hover">
                 <thead>
-                    <tr class="row-first" >
+                    <tr>
                         <th>Company Name</th>
                         <th>Banking Date</th>
                         <th>IBAN</th>
@@ -30,7 +39,11 @@ Yesterday
                 </thead>
                 <tbody>
                     {% for d in data %}
-                    <tr>
+                    {% if d.Balance_Difference != 0 %}
+                    <tr class="table-danger">
+                        {% else %}
+                    <tr class="table-dark">
+                        {% endif %}
                         <td>{{ d.Company_Name }}</td>
                         <td>{{ d.Banking_Date }}</td>
                         <td>{{ d.IBAN }}</td>
@@ -43,11 +56,12 @@ Yesterday
         </div>
 
     </div>
+
+
+
+    {% else %}
+    <p>No statements for yesterday</p>
+    {% endif %}
+
 </div>
-
-    
-{% else %}
-<p>No statements for yesterday</p>
-{% endif %}
-
 {% endblock %}

@@ -3,155 +3,114 @@
 Yesterday
 {% endblock %}
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    <label for="ibanfiltertext">IBAN Filter:</label><br>
-    <input type="text" name="ibanfiltertext" value=""><br><br>
-    <input type="submit" name="IbanFilter" value="Iban Filter" />
-    <input type="submit" name="BalanceDifference" value="Balance difference" />
-    <input type="submit" name="ResetFilter" value="Reset Filter"/>
 
 
-</form>
-<div>
-<label for="cars">Filter environment:</label>
-<select class="form-control" name="location">
-    {% for location in locations %}
-
-        <option value="{{ location }}" selected="selected">{{ location }}</option>
-
-    {% endfor %}
-</select>
-</div>
-
-<div class="container">
-	<div class="row">
-        <div id="filter-panel" class="filter-panel">
-            <div class="panel panel-default">
-                <div class="panel-body">
-                    <form class="form-inline" role="form">
-                        <div class="form-group">
-                            <label class="filter-col" style="margin-right:0;" for="pref-perpage">Rows per page:</label>
-                            <select id="pref-perpage" class="form-control">
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                                <option value="7">7</option>
-                                <option value="8">8</option>
-                                <option value="9">9</option>
-                                <option selected="selected" value="10">10</option>
-                                <option value="15">15</option>
-                                <option value="20">20</option>
-                                <option value="30">30</option>
-                                <option value="40">40</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                                <option value="200">200</option>
-                                <option value="300">300</option>
-                                <option value="400">400</option>
-                                <option value="500">500</option>
-                                <option value="1000">1000</option>
-                            </select>                                
-                        </div> <!-- form group [rows] -->
-                        <div class="form-group">
-                            <label class="filter-col" style="margin-right:0;" for="pref-search">Search:</label>
-                            <input type="text" class="form-control input-sm" id="pref-search">
-                        </div><!-- form group [search] -->
-                        <div class="form-group">
-                            <label class="filter-col" style="margin-right:0;" for="pref-orderby">Order by:</label>
-                            <select id="pref-orderby" class="form-control">
-                                <option>Descendent</option>
-                            </select>                                
-                        </div> <!-- form group [order by] --> 
-                        <div class="form-group">    
-                            <div class="checkbox" style="margin-left:10px; margin-right:10px;">
-                                <label><input type="checkbox"> Remember parameters</label>
-                            </div>
-                            <button type="submit" class="btn btn-default filter-col">
-                                <span class="glyphicon glyphicon-record"></span> Save Settings
-                            </button>  
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>    
-        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#filter-panel">
-            <span class="glyphicon glyphicon-cog"></span> Advanced Search
-        </button>
-	</div>
-</div>
+<div class="row">
+    <div class="col">
+        <div class="card text-white bg-dark">
+            <form method="post">
+                {% csrf_token %}
+                <label for="ibanfiltertext">IBAN Filter:</label><br>
+                <input class="form-control" type="text" name="ibanfiltertext" value=""><br><br>
+                <input class="btn btn-primary" type="submit" name="IbanFilter" value="Iban Filter" />
+                <input class="btn btn-primary" type="submit" name="BalanceDifference" value="Balance difference" />
+                <input class="btn btn-primary" type="submit" name="ResetFilter" value="Reset Filter" />
 
 
-<h2>Bank statements</h2>
-{% if data %}
+            </form>
 
-<table>
-    <thead>
-        <tr class="row-first" >
-            <th>Company_Name</th>
-            <th>Banking_Date</th>
-            <th>IBAN</th>
-            <th>CAMT_Ref_Payments</th>
-            <th>NAV_Ref_Payments</th>
-            <th>Ref_Payments_Match</th>
-            <th>Ref_Payments_Status</th>
-            <th>Posted_Unmatched_Entries</th>
-            <th>CAMT_Payments</th>
-            <th>Vendor_Payments_Sent_To_Bank</th>
-            <th>Vendor_Payments_Match</th>
-            <th>Vendor_Payments_Status</th>
-            <th>Posted_Open_Vendor_Entries</th>
-            <th>CAMT_FCY_Payments</th>
-            <th>FCY_Payments_Sent_To_Bank</th>
-            <th>Currency_Difference</th>
-            <th>Currency_Difference_Percent</th>
-            <th>Other_CAMT_Entries</th>
-            <th>Other_CAMT_Entries_Matched</th>
-            <th>Other_CAMT_Entries_Status</th>
-            <th>CAMT_Balance</th>
-            <th>NAV_Account_Balance</th>
-            <th>Balance_Difference</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for d in data %}
-        {% if d.Balance_Difference != 0 %}
-        <tr id="negative">
+
+            <label for="cars">Filter environment:</label>
+            <select class="form-control" name="location">
+                {% for location in locations %}
+
+                <option value="{{ location }}" selected="selected">{{ location }}</option>
+
+                {% endfor %}
+            </select>
+
+
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card text-white bg-dark">
+            <h5 class="card-header">Bank statements, total {{ total_count }}!
+                Balance differs in {{ balance_difference_count }}.</h5>
+
+            {% if data %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Company_Name</th>
+                        <th scope="col">Banking_Date</th>
+                        <th scope="col">IBAN</th>
+                        <th scope="col">CAMT_Ref_Payments</th>
+                        <th scope="col">NAV_Ref_Payments</th>
+                        <th scope="col">Ref_Payments_Match</th>
+                        <th scope="col">Ref_Payments_Status</th>
+                        <th scope="col">Posted_Unmatched_Entries</th>
+                        <th scope="col">CAMT_Payments</th>
+                        <th scope="col">Vendor_Payments_Sent_To_Bank</th>
+                        <th scope="col">Vendor_Payments_Match</th>
+                        <th scope="col">Vendor_Payments_Status</th>
+                        <th scope="col">Posted_Open_Vendor_Entries</th>
+                        <th scope="col">CAMT_FCY_Payments</th>
+                        <th scope="col">FCY_Payments_Sent_To_Bank</th>
+                        <th scope="col">Currency_Difference</th>
+                        <th scope="col">Currency_Difference_Percent</th>
+                        <th scope="col">Other_CAMT_Entries</th>
+                        <th scope="col">Other_CAMT_Entries_Matched</th>
+                        <th scope="col">Other_CAMT_Entries_Status</th>
+                        <th scope="col">CAMT_Balance</th>
+                        <th scope="col">NAV_Account_Balance</th>
+                        <th scope="col">Balance_Difference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in data %}
+                    {% if d.Balance_Difference != 0 %}
+                    <tr class="table-danger">
+                        {% else %}
+                    <tr class="table-dark">
+                        {% endif %}
+                        <td>{{ d.Company_Name }}</td>
+                        <td>{{ d.Banking_Date }}</td>
+                        <td>{{ d.IBAN }}</td>
+                        <td>{{ d.CAMT_Ref_Payments }}</td>
+                        <td>{{ d.NAV_Ref_Payments }}</td>
+                        <td>{{ d.Ref_Payments_Match }}</td>
+                        <td>{{ d.Ref_Payments_Status }}</td>
+                        <td>{{ d.Posted_Unmatched_Entries }}</td>
+                        <td>{{ d.CAMT_Payments }}</td>
+                        <td>{{ d.Vendor_Payments_Sent_To_Bank }}</td>
+                        <td>{{ d.Vendor_Payments_Match }}</td>
+                        <td>{{ d.Vendor_Payments_Status }}</td>
+                        <td>{{ d.Posted_Open_Vendor_Entries }}</td>
+                        <td>{{ d.CAMT_FCY_Payments }}</td>
+                        <td>{{ d.FCY_Payments_Sent_To_Bank }}</td>
+                        <td>{{ d.Currency_Difference }}</td>
+                        <td>{{ d.Currency_Difference_Percent }}</td>
+                        <td>{{ d.Other_CAMT_Entries }}</td>
+                        <td>{{ d.Other_CAMT_Entries_Matched }}</td>
+                        <td>{{ d.Other_CAMT_Entries_Status }}</td>
+                        <td>{{ d.CAMT_Balance }}</td>
+                        <td>{{ d.NAV_Account_Balance }}</td>
+                        <td>{{ d.Balance_Difference }}</td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+
         {% else %}
-        <tr>
+        <p>No statements for yesterday</p>
         {% endif %}
-            <td>{{ d.Company_Name }}</td>
-            <td>{{ d.Banking_Date }}</td>
-            <td>{{ d.IBAN }}</td>
-            <td>{{ d.CAMT_Ref_Payments }}</td>
-            <td>{{ d.NAV_Ref_Payments }}</td>
-            <td>{{ d.Ref_Payments_Match }}</td>
-            <td>{{ d.Ref_Payments_Status }}</td>
-            <td>{{ d.Posted_Unmatched_Entries }}</td>
-            <td>{{ d.CAMT_Payments }}</td>
-            <td>{{ d.Vendor_Payments_Sent_To_Bank }}</td>
-            <td>{{ d.Vendor_Payments_Match }}</td>
-            <td>{{ d.Vendor_Payments_Status }}</td>
-            <td>{{ d.Posted_Open_Vendor_Entries }}</td>
-            <td>{{ d.CAMT_FCY_Payments }}</td>
-            <td>{{ d.FCY_Payments_Sent_To_Bank }}</td>
-            <td>{{ d.Currency_Difference }}</td>
-            <td>{{ d.Currency_Difference_Percent }}</td>
-            <td>{{ d.Other_CAMT_Entries }}</td>
-            <td>{{ d.Other_CAMT_Entries_Matched }}</td>
-            <td>{{ d.Other_CAMT_Entries_Status }}</td>
-            <td>{{ d.CAMT_Balance }}</td>
-            <td>{{ d.NAV_Account_Balance }}</td>          
-            <td>{{ d.Balance_Difference }}</td>
+    </div>
+</div>
 
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>No statements for yesterday</p>
-{% endif %}
 
 {% endblock %}

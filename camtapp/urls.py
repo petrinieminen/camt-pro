@@ -28,6 +28,7 @@ urlpatterns = [
     path("api_resources/", api_resource_list_view, name="api_resources"),
     path("delete_resource/<api_id>", views.delete_resource, name='delete_resource'),
     path("update_resource/<api_id>", views.update_resource, name='update_resource'),
+    path("unmatched_statements", views.unmatched_statements, name='unmatched_statements'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

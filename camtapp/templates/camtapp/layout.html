@@ -13,16 +13,16 @@
 
 </head>
 
-<body>
-<div class="navbar navbar-dark bg-primary">
+<body style="background-color: #222;">
+<div class="navbar navbar-dark bg-dark">
     <a href="{% url 'home' %}" class="navbar-brand">Home</a>
     <a href="{% url 'yesterdays_bank' %}" class="navbar-brand">Yesterday</a>
     <a href="{% url 'yesterdays_bank_compact' %}" class="navbar-brand">Yesterday compact</a>
+    <a href="{% url 'unmatched_statements' %}" class="navbar-brand">Unmatched Statements</a>
     <a href="{% url 'api_resource' %}" class="navbar-brand">New Api resource</a>
-    <a href="{% url 'api_resources' %}" class="navbar-brand">All Api resources</a>
 </div>
 
-<div class="container">
+<div class="container-fluid">
     {% block content %}
     {% endblock %}
     <hr/>

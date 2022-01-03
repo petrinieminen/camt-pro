@@ -1,7 +1,11 @@
 from typing import List
+import time
 from django.http import HttpResponse
 import re
 from django.utils.timezone import datetime
+import datetime as dt
+
+from requests.sessions import Request
 from camtapp import api
 from django.shortcuts import render
 
@@ -22,6 +26,7 @@ class HomeListView(ListView):
 
 class ApiResourceView(ListView):
     model = ApiResource
+
     def get_context_data(self, **kwargs):
         context = super(ApiResourceView, self).get_context_data(**kwargs)
         return context
@@ -37,20 +42,43 @@ def hello_there(request, name):
         }
     )
 
+
 def iban_filter(ibanfilter):
     data = api.get_iban_filtered_statements(ibanfilter)
     return data
 
 
 def balance_difference_filter():
-    data = api.get_balance_difference_statements()
+    data = api.get_balance_difference_report()
     return data
+
+
+def unmatched_statements(request):
+    t1 = time.time()
+    data = None
+
+    if request.method == "POST":
+        if request.POST.get('BalanceDifference', False):
+            data = api.get_balance_difference_statements()
+        elif request.POST.get('Unhandled', False):
+            data = api.get_unhandled_statements()            
+    
+    t2 = time.time()
+    time_elapsed = t2 - t1
+    pretty_time = str(dt.timedelta(seconds=time_elapsed))
+
+    return render(request,
+                  'camtapp/unmatched_statements.html',
+                  {
+                      'data': data,
+                      'time_elapsed': pretty_time
+                  })
 
 
 def yesterdays_bank(request):
     if request.method == "POST":
         if request.POST.get('IbanFilter', False):
-            data = iban_filter(request.POST["ibanfiltertext"])
+            data = iban_filter(request.POST["IbanFilter"])
         elif request.POST.get('BalanceDifference', False):
             data = balance_difference_filter()
         else:
@@ -59,18 +87,23 @@ def yesterdays_bank(request):
         print(request)
         data = api.get_yesterday()
 
+    balance_difference_count = len([statement for statement in data if statement["Balance_Difference"] != 0])
+
+
     locations = api.get_location_names()
     return render(request,
-    'camtapp/yesterday.html',
-    { 'data': data,
-    'locations': locations
-    })
+                  'camtapp/yesterday.html',
+                  {'data': data,
+                   'locations': locations,
+                   'total_count': len(data),
+                   'balance_difference_count': balance_difference_count
+                   })
 
 
 def yesterdays_bank_compact(request):
     if request.method == "POST":
         if request.POST.get('IbanFilter', False):
-            data = iban_filter(request.POST["ibanfiltertext"])
+            data = iban_filter(request.POST["IbanFilter"])
         elif request.POST.get('BalanceDifference', False):
             data = balance_difference_filter()
         else:
@@ -79,17 +112,21 @@ def yesterdays_bank_compact(request):
         print(request)
         data = api.get_yesterday()
 
+    balance_difference_count = len([statement for statement in data if statement["Balance_Difference"] != 0])
+
     locations = api.get_location_names()
     return render(request,
-    'camtapp/yesterday_compact.html',
-    { 'data': data,
-    'locations': locations
-    })
+                  'camtapp/yesterday_compact.html',
+                  {'data': data,
+                   'locations': locations,
+                   'total_count': len(data),
+                   'balance_difference_count': balance_difference_count
+                   })
 
 
 def delete_resource(request, api_id=None):
     object = ApiResource.objects.get(id=api_id)
-    
+
     object.delete()
     return redirect('api_resource')
 
@@ -103,12 +140,12 @@ def update_resource(request, api_id=None):
         transaction.log_date = datetime.now()
         transaction.save()
         return redirect('api_resource')
-    
+
     return render(request, 'camtapp/update_resource.html',
-    {
-        'resource': object,
-        'form': form 
-    })
+                  {
+                      'resource': object,
+                      'form': form
+                  })
 
 
 def api_resource(request):
@@ -123,31 +160,8 @@ def api_resource(request):
             message.save()
             return redirect("api_resource")
     else:
-        return render(request, "camtapp/api_resource.html", 
-        {
-            "form": form,
-            "resources": api_resource_list,
-        })
-
-
-def pretty_request(request):
-    headers = ''
-    for header, value in request.META.items():
-        if not header.startswith('HTTP'):
-            continue
-        header = '-'.join([h.capitalize() for h in header[5:].lower().split('_')])
-        headers += '{}: {}\n'.format(header, value)
-
-    return (
-        '{method} HTTP/1.1\n'
-        'Content-Length: {content_length}\n'
-        'Content-Type: {content_type}\n'
-        '{headers}\n\n'
-        '{body}'
-    ).format(
-        method=request.method,
-        content_length=request.META['CONTENT_LENGTH'],
-        content_type=request.META['CONTENT_TYPE'],
-        headers=headers,
-        body=request.body,
-    )
+        return render(request, "camtapp/api_resource.html",
+                      {
+                          "form": form,
+                          "resources": api_resource_list,
+                      })

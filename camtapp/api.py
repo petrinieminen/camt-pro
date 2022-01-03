@@ -28,17 +28,99 @@ def open_session(location, username, password):
 
 
 def get_iban_filtered_statements(iban):
+    all_data = []
 
-    client = open_session()
+    configs = get_configs()
+    for v in configs.values_list():
 
-    demofilter = {
-    "Field": "IBAN",
-    "Criteria": f"{iban}"
-    }
-    demo = client.service.ReadMultiple(demofilter, None, 1000)
+        base_url = v[2]
+        service_name = v[3]
+        default_company = html.escape(v[4])
+        api_username = v[5]
+        api_pass = v[6]
 
-    return demo
+        report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
+        client = open_session(report_url,api_username, api_pass)
 
+
+        filter = {
+        "Field": "IBAN",
+        "Criteria": f"{iban}"
+        }
+        result = client.service.ReadMultiple(filter, None, 1000)
+        if result:
+            all_data += result
+
+    return all_data
+
+def get_balance_difference_report():
+    all_data = []
+
+    configs = get_configs()
+    for v in configs.values_list():
+        
+        base_url = v[2]
+        service_name = v[3]
+        default_company = html.escape(v[4])
+        api_username = v[5]
+        api_pass = v[6]
+
+        report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
+        client = open_session(report_url,api_username, api_pass)
+
+        today = date.today() - timedelta(days=0)
+        previous_workday = previous_working_day(today)
+        filter = [{
+            "Field": "Balance_Difference",
+            "Criteria": "<>0"
+        }, {
+                "Field": "Banking_Date",
+                "Criteria": f"{previous_workday}"
+            }]
+
+        result = client.service.ReadMultiple(filter, None, 1000)
+        if result:
+            all_data += result
+
+    return all_data
+
+def get_unhandled_statements():
+    all_data = []
+    configs = get_configs()
+
+    for v in configs.values_list():
+
+        base_url = v[2]
+        service_name = v[3]
+        default_company = html.escape(v[4])
+        api_username = v[5]
+        api_pass = v[6]
+
+        companies = get_company_names(v)
+        for company in companies:
+            statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint
+        
+            client = open_session(statement_url, api_username, api_pass)
+
+            filter = [{
+                "Field": "Automation_Handled",
+                "Criteria": False,                
+            },]
+            
+            print("We are getting non handled statements for " + company)
+            statements = client.service.ReadMultiple(filter, None, 1000)
+
+            if statements:   
+                for statement in statements:
+                    statement["Company_Name"] = company
+                    print("we have no match: ", statement)
+                    print("statementin tyyppi:", type(statement))
+                    print("statementTTIEn tyyppi:", type(statements))
+                    all_data.append(statement)
+            else:
+                print("all handled")
+    print("ALL DATA", all_data)
+    return all_data
 
 def get_balance_difference_statements():
     all_data = []
@@ -69,13 +151,18 @@ def get_balance_difference_statements():
             }]
             
             print("We are getting non matched statements for " + company)
-            demo = client.service.ReadMultiple(filter, None, 1000)
-            if demo:
-                print("we have no match: ", demo)
-                all_data += demo
+            statements = client.service.ReadMultiple(filter, None, 1000)
+
+            if statements:   
+                for statement in statements:
+                    statement["Company_Name"] = company
+                    print("we have no match: ", statement)
+                    print("statementin tyyppi:", type(statement))
+                    print("statementTTIEn tyyppi:", type(statements))
+                    all_data.append(statement)
             else:
                 print("all match")
-
+    print("ALL DATA", all_data)
     return all_data
 
 
@@ -120,9 +207,6 @@ def get_company_names(config):
 
 def get_yesterday():
     all_data = []
-
-    statements = get_balance_difference_statements()
-
     configs = get_configs()
     for v in configs.values_list():
 
@@ -141,12 +225,12 @@ def get_yesterday():
         previous_workday = previous_working_day(today)
         print(f"previous wdate was {previous_workday}  and today is {today}")
 
-        demofilter = {
+        filter = {
             "Field": "Banking_Date",
             "Criteria": f"{previous_workday}"
         }
-        demo = client.service.ReadMultiple(demofilter, None, 1000)
-        all_data += demo 
+        result = client.service.ReadMultiple(filter, None, 1000)
+        all_data += result 
 
     return all_data
 
