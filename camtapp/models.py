@@ -6,11 +6,11 @@ class ApiResource(models.Model):
     api_base_url = models.CharField(max_length=250, default=None)
     api_service_name = models.CharField(max_length=50, default=None)
     default_company = models.TextField(max_length=30, default=None)
+    tenant_id = models.TextField(max_length=30, default=None, null=True, blank=True)
     api_username = models.CharField(max_length=50, default=None)
     api_pass = models.CharField(max_length=50, default=None)
     keepass_uuid = models.TextField()
 
-    description = models.CharField(max_length=300, default=None)
     log_date = models.DateTimeField("date logged")
 
     def __str__(self):

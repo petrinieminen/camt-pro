@@ -1,0 +1,66 @@
+{% extends "camtapp/layout.html" %}
+{% block title %}
+Dashboard
+{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="row">
+    <div class="col col-lg-2">
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                <input class="btn btn-primary" type="date" name="startdate" value="Start Date" />
+                <input class="btn btn-primary" type="date" name="enddate" value="End Date" />
+                <input class="btn btn-primary" type="submit" name="UseDates" value="Run Report" />
+                <input class="btn btn-primary" type="submit" name="ResetFilter" value="Reset Filter" />
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+        
+
+    <div class="col-md-auto">
+        <div class="card text-white bg-dark">
+            {% if data %}
+            <h5 class="card-header">Report from {{startdate}} to {{enddate}}</h5>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Success refs</th>
+                        <th>Failure refs</th>
+                        <th>Success payments</th>
+                        <th>Failure payments</th>
+                        <th>Ref Success Rate</th>
+                        <th>Payment Success Rate</th>
+                        <th>Total Success Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in data.items %}
+                            <tr class="table-dark">
+                                <td> {{ key }}</td> 
+                                <td>  {{ value.RefSuccess }} </td>
+                                <td>  {{ value.RefFail }} </td>
+                                <td>  {{ value.PaymSuccess }} </td>
+                                <td>  {{ value.PaymFail }} </td>
+                                <td>  {{ value.RefSuccessRate }} </td>
+                                <td>  {{ value.PaymentSuccessRate }} </td>
+                                <td>  {{ value.TotalSuccessRate }} </td>
+                            </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <h5 class="card-header">No reportable on dates</h5>
+    {% endif %}
+</div>
+{% endblock %}

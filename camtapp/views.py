@@ -33,6 +33,9 @@ class ApiResourceView(ListView):
 
 
 def hello_there(request, name):
+    start_date = dt.datetime(2022, 1, 1)
+    end_date = dt.datetime(2022, 1, 5)
+    api.form_success_report(start_date.strftime("%m.%d.%Y"),end_date.strftime("%m.%d.%Y"))
     return render(
         request,
         'camtapp/hello_there.html',
@@ -41,6 +44,28 @@ def hello_there(request, name):
             'date': datetime.now()
         }
     )
+
+def camt_dashboard (request):
+    data = None
+    startdate = None
+    enddate = None
+
+    if request.method == "POST":
+        if request.POST.get('startdate', False) and request.POST.get('enddate', False):
+            startdate = dt.datetime.strptime(request.POST["startdate"], '%Y-%m-%d').strftime("%m.%d.%Y")
+            enddate = dt.datetime.strptime(request.POST["enddate"], '%Y-%m-%d').strftime("%m.%d.%Y")
+            data = api.form_success_report(startdate, enddate)
+
+
+    return render(request,
+                'camtapp/camt_dashboard.html',
+                {
+                    'data': data,
+                    'startdate':  dt.datetime.strptime(startdate,"%m.%d.%Y").strftime("%d.%m.%Y") if startdate else startdate,
+                    'enddate': dt.datetime.strptime(enddate,"%m.%d.%Y").strftime("%d.%m.%Y")  if enddate else enddate
+                    
+                })
+
 
 
 def iban_filter(ibanfilter):

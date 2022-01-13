@@ -29,6 +29,7 @@ urlpatterns = [
     path("delete_resource/<api_id>", views.delete_resource, name='delete_resource'),
     path("update_resource/<api_id>", views.update_resource, name='update_resource'),
     path("unmatched_statements", views.unmatched_statements, name='unmatched_statements'),
+    path("camt_dashboard", views.camt_dashboard, name='camt_dashboard'),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

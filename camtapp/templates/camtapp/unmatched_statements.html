@@ -20,7 +20,7 @@ Unmatched Statements from Previous Workday
         <div class="card text-white bg-dark">
             {% if data %}
             <h5 class="card-header">Thank you for waiting. Data fetch took {{ time_elapsed }}</h5>
-            <table class="message_list">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>Company</th>
@@ -32,7 +32,7 @@ Unmatched Statements from Previous Workday
                 </thead>
                 <tbody>
                     {% for statement in data %}
-                    <tr>
+                    <tr class="table-dark">
                         <td>{{ statement.Company_Name }}</td>
                         <td>{{ statement.IBAN }}</td>
                         <td>{{ statement.Closing_Balance_Date }}</td>
