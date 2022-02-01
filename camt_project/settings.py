@@ -29,6 +29,7 @@ if PRODUCTION_CONF.exists():
     ALLOWED_HOSTS = production_config['allowed_hosts']
     DATABASES = production_config['databases']
     CSRF_TRUSTED_ORIGINS = production_config['csrf_trusted_origins']
+    STATIC_ROOT = production_config['static_root']
     DEBUG = False
     # Clear prev config
     LOGGING_CONFIG = None
@@ -71,8 +72,11 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+    STATIC_ROOT = BASE_DIR / "static_collected"
 
-
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Application definition
 
@@ -159,7 +163,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_ROOT = BASE_DIR / 'static_collected'
 
 
 COMPRESS_PRECOMPILERS = (
