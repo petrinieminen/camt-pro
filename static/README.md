@@ -11,7 +11,7 @@ The command ``manage.py collectstatic --clear`` copies the files there. The
 setting ``STATIC_ROOT`` in ``settings.py`` configures these paths. Existing
 files in ``STATIC_ROOT`` location are deleted!
 
-If you run ``manage.py runserver`` locally on your laptop ensure that the
+If you run ``manage.py runserver`` locally on your computer ensure that the
 setting ``DEBUG = True`` is active, because then Django will serve these files
 directly from this ``static`` folder.
 
