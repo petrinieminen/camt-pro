@@ -19,13 +19,58 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-blpti!l-006m-9fw!%ks&u8e3#202us4b$ku9o+o@sx2g1wp4x'
+PRODUCTION_CONF = Path('/etc/camt/config.json')
+if PRODUCTION_CONF.exists():
+    import json
+    import logging.config
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+    production_config = json.load(PRODUCTION_CONF.open())
+    SECRET_KEY = production_config['secret_key']
+    ALLOWED_HOSTS = production_config['allowed_hosts']
+    DATABASES = production_config['databases']
+    DEBUG = False
+    # Clear prev config
+    LOGGING_CONFIG = None
+    logging.config.dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'console': {
+                'format': '%(message)s',
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'console',
+            },
+        },
+        'loggers': {
+            'gunicorn': {
+                'level': 'INFO',
+                'handlers': ['console'],
+                'propagate': True,
+            },
+        },
+    })
+else:
+    # SECURITY WARNING: keep the secret key used in production secret!
+    SECRET_KEY = 'django-insecure-blpti!l-006m-9fw!%ks&u8e3#202us4b$ku9o+o@sx2g1wp4x'
 
-ALLOWED_HOSTS = []
+    # SECURITY WARNING: don't run with debug turned on in production!
+    DEBUG = True
+
+    ALLOWED_HOSTS = []
+
+    # Database
+    # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 
 # Application definition
@@ -70,17 +115,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'camt_project.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 
 
 # Password validation
