@@ -28,6 +28,7 @@ if PRODUCTION_CONF.exists():
     SECRET_KEY = production_config['secret_key']
     ALLOWED_HOSTS = production_config['allowed_hosts']
     DATABASES = production_config['databases']
+    CSRF_TRUSTED_ORIGINS = production_config['csrf_trusted_origins']
     DEBUG = False
     # Clear prev config
     LOGGING_CONFIG = None
