@@ -109,6 +109,7 @@ def form_success_report(start_date, end_date):
     configs = get_configs()
 
     for v in configs.values_list():
+        instance_name = v[1]
         base_url = v[2]
         service_name = v[3]
         default_company = html.escape(v[4])
@@ -135,6 +136,7 @@ def form_success_report(start_date, end_date):
             instance_payments_total = 0
             for report in reports:       
                 comp_key = report["Company_Name"]
+                instance = "CustomerEntity"
                 ref_success_key = "RefSuccess"
                 ref_fail_key = "RefFail"
                 paym_success_key = "PaymSuccess"
@@ -145,6 +147,7 @@ def form_success_report(start_date, end_date):
                 instance_summary[comp_key].setdefault(ref_fail_key, 0)
                 instance_summary[comp_key].setdefault(paym_success_key, 0)
                 instance_summary[comp_key].setdefault(paym_fail_key,  0)
+                instance_summary[comp_key].setdefault(instance,  instance_name)
 
 
                 if report["Ref_Payments_Status"] == "Posted":

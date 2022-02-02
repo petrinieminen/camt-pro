@@ -32,6 +32,7 @@ Dashboard
             <table class="table table-hover">
                 <thead>
                     <tr>
+                        <th>Customer Entity</th>
                         <th>Company</th>
                         <th>Success refs</th>
                         <th>Failure refs</th>
@@ -45,6 +46,7 @@ Dashboard
                 <tbody>
                     {% for key, value in data.items %}
                             <tr class="table-dark">
+                                <td> {{ value.CustomerEntity }}</td>
                                 <td> {{ key }}</td> 
                                 <td>  {{ value.RefSuccess }} </td>
                                 <td>  {{ value.RefFail }} </td>
