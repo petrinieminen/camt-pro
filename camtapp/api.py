@@ -241,6 +241,7 @@ def get_unhandled_statements():
         companies = get_company_names(v)
         for company in companies:
             
+            print("We are getting non handled statements for " + company)
             if tenant_id:
                 statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint + '?tenant=' + tenant_id
             else:
@@ -253,7 +254,7 @@ def get_unhandled_statements():
                 "Criteria": False,                
             },]
             
-            print("We are getting non handled statements for " + company)
+            
             statements = client.service.ReadMultiple(filter, None, 1000)
 
             if statements:   
@@ -337,6 +338,8 @@ def get_company_names(config):
     tenant_id = config[5]
     api_username = config[6]
     api_pass = config[7]
+
+    print("getting companies for " + service_name)
 
     if tenant_id:
         settings_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.settings_endpoint + '?tenant=' + tenant_id
