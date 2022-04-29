@@ -13,6 +13,7 @@ import holidays
 from camtapp import config as config_module
 from camtapp.models import ApiResource
 from collections import defaultdict, OrderedDict
+import sys
 
 
 def get_configs():
@@ -386,7 +387,10 @@ def get_yesterday():
             "Field": "Banking_Date",
             "Criteria": f"{previous_workday}"
         }
-        result = client.service.ReadMultiple(filter, None, 1000)
+        try:
+            result = client.service.ReadMultiple(filter, None, 1000)
+        except:
+            print("Oops!", sys.exc_info()[0], "occurred.")
         if result:
             all_data += result 
 
