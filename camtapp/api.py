@@ -55,7 +55,7 @@ def get_iban_filtered_statements(iban):
         try:
             client = open_session(report_url, api_username, api_pass)
         except Exception as e:
-            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
             raise Exception(error_message)
 
         filter = {
@@ -92,7 +92,7 @@ def get_balance_difference_report():
         try:
             client = open_session(report_url, api_username, api_pass)
         except Exception as e:
-            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
             raise Exception(error_message)
 
         today = date.today() - timedelta(days=0)
@@ -149,7 +149,7 @@ def form_success_report(start_date, end_date):
         try:
             client = open_session(statement_url, api_username, api_pass)
         except Exception as e:
-            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
             raise Exception(error_message)
 
         filter = [{
@@ -290,7 +290,7 @@ def get_unhandled_statements():
             try:
                 client = open_session(statement_url, api_username, api_pass)
             except Exception as e:
-                error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+                error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
                 raise Exception(error_message)
 
             filter = [{
@@ -336,7 +336,7 @@ def get_balance_difference_statements():
             try:
                 client = open_session(statement_url, api_username, api_pass)
             except Exception as e:
-                error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+                error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
                 raise Exception(error_message)
             
             today = date.today() - timedelta(days=0)
@@ -402,7 +402,7 @@ def get_company_names(config):
     try:
         client = open_session(settings_url, api_username, api_pass)
     except Exception as e:
-        error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+        error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
         raise Exception(error_message)
     filter = {
         "Field": "Company_Name",
@@ -440,7 +440,7 @@ def get_yesterday():
         try:
             client = open_session(report_url, api_username, api_pass)
         except Exception as e:
-            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            error_message = f"An error occurred while fetching data for {service_name}, please contact Admin:\n\n{e}"
             raise Exception(error_message)
 
         today = date.today() - timedelta(days=0)
