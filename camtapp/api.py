@@ -19,12 +19,14 @@ import sys
 def get_configs():
     return ApiResource.objects.all()
 
+
 def open_session(location, username, password):
     session = Session()
     session.auth = HTTPBasicAuth(username, password)
 
     wsdl_location = location
-    client = zeep.Client(wsdl=wsdl_location, transport=Transport(session=session))
+    client = zeep.Client(wsdl=wsdl_location,
+                         transport=Transport(session=session))
 
     return client
 
@@ -43,16 +45,22 @@ def get_iban_filtered_statements(iban):
         api_pass = v[7]
 
         if tenant_id:
-            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
+            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + \
+                config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
         else:
-            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
-            
-        client = open_session(report_url,api_username, api_pass)
+            report_url = base_url + service_name + '/WS/' + default_company + \
+                '/Page/' + config_module.endpoints.report_endpoint
 
+
+        try:
+            client = open_session(report_url, api_username, api_pass)
+        except Exception as e:
+            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            raise Exception(error_message)
 
         filter = {
-        "Field": "IBAN",
-        "Criteria": f"{iban}"
+            "Field": "IBAN",
+            "Criteria": f"{iban}"
         }
         result = client.service.ReadMultiple(filter, None, 1000)
         if result:
@@ -66,7 +74,7 @@ def get_balance_difference_report():
 
     configs = get_configs()
     for v in configs.values_list():
-        
+
         base_url = v[2]
         service_name = v[3]
         default_company = html.escape(v[4])
@@ -75,11 +83,17 @@ def get_balance_difference_report():
         api_pass = v[7]
 
         if tenant_id:
-            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
+            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + \
+                config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
         else:
-            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
+            report_url = base_url + service_name + '/WS/' + default_company + \
+                '/Page/' + config_module.endpoints.report_endpoint
 
-        client = open_session(report_url,api_username, api_pass)
+        try:
+            client = open_session(report_url, api_username, api_pass)
+        except Exception as e:
+            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            raise Exception(error_message)
 
         today = date.today() - timedelta(days=0)
         previous_workday = previous_working_day(today)
@@ -87,11 +101,17 @@ def get_balance_difference_report():
             "Field": "Balance_Difference",
             "Criteria": "<>0"
         }, {
-                "Field": "Banking_Date",
-                "Criteria": f"{previous_workday}"
-            }]
+            "Field": "Banking_Date",
+            "Criteria": f"{previous_workday}"
+        }]
 
-        result = client.service.ReadMultiple(filter, None, 1000)
+        try:
+            result = client.service.ReadMultiple(filter, None, 1000)
+        except Exception as e:
+            print(
+                f"An error occurred while fetching data from {service_name}: {e}")
+            continue
+
         if result:
             all_data += result
 
@@ -117,59 +137,67 @@ def form_success_report(start_date, end_date):
         tenant_id = v[5]
         api_username = v[6]
         api_pass = v[7]
-        
+
         if tenant_id:
-            statement_url =  base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
+            statement_url = base_url + service_name + '/WS/' + default_company + \
+                '/Page/' + config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
         else:
-            statement_url =  base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
-    
-        client = open_session(statement_url, api_username, api_pass)
+            statement_url = base_url + service_name + '/WS/' + default_company + \
+                '/Page/' + config_module.endpoints.report_endpoint
+
+
+        try:
+            client = open_session(statement_url, api_username, api_pass)
+        except Exception as e:
+            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            raise Exception(error_message)
 
         filter = [{
             "Field": "Banking_Date",
-            "Criteria": f'{start_date}..{end_date}',                
-        },]
+            "Criteria": f'{start_date}..{end_date}',
+        }, ]
         reports = client.service.ReadMultiple(filter, None, 1000)
 
-        if reports:   
+        if reports:
             instance_summary = defaultdict(dict)
             instance_ref_total = 0
             instance_payments_total = 0
-            for report in reports:       
+            for report in reports:
                 comp_key = report["Company_Name"]
                 instance = "CustomerEntity"
                 ref_success_key = "RefSuccess"
                 ref_fail_key = "RefFail"
                 paym_success_key = "PaymSuccess"
-                paym_fail_key = "PaymFail"   
+                paym_fail_key = "PaymFail"
 
-                #stupid way to init 
+                # stupid way to init
                 instance_summary[comp_key].setdefault(ref_success_key, 0)
                 instance_summary[comp_key].setdefault(ref_fail_key, 0)
                 instance_summary[comp_key].setdefault(paym_success_key, 0)
                 instance_summary[comp_key].setdefault(paym_fail_key,  0)
                 instance_summary[comp_key].setdefault(instance,  instance_name)
 
-
                 if report["Ref_Payments_Status"] == "Posted":
                     total_refs += 1
                     instance_ref_total += 1
                     total_ref_success += 1
-                    
+
                     try:
                         instance_summary[comp_key][ref_success_key] += 1
                     except KeyError:
-                        instance_summary[comp_key].update({f"{ref_success_key}":  1})
-                    
+                        instance_summary[comp_key].update(
+                            {f"{ref_success_key}":  1})
+
                 elif report["Ref_Payments_Status"] == "On Journal":
                     total_refs += 1
                     total_ref_fails += 1
                     instance_ref_total += 1
-                    
+
                     try:
                         instance_summary[comp_key][ref_fail_key] += 1
                     except KeyError:
-                        instance_summary[comp_key].update({f"{ref_fail_key}":  1})
+                        instance_summary[comp_key].update(
+                            {f"{ref_fail_key}":  1})
 
                 if report["Vendor_Payments_Status"] == "Posted":
                     total_payments += 1
@@ -178,7 +206,8 @@ def form_success_report(start_date, end_date):
                     try:
                         instance_summary[comp_key][paym_success_key] += 1
                     except KeyError:
-                        instance_summary[comp_key].update({f"{paym_success_key}":  1})
+                        instance_summary[comp_key].update(
+                            {f"{paym_success_key}":  1})
                 elif report["Vendor_Payments_Status"] == "On Journal":
                     total_payments += 1
                     total_payments_fail += 1
@@ -186,12 +215,16 @@ def form_success_report(start_date, end_date):
                     try:
                         instance_summary[comp_key][paym_fail_key] += 1
                     except KeyError:
-                        instance_summary[comp_key].update({f"{paym_fail_key}":  1})
-            
-            for k,v in instance_summary.items():
-                ref_successrate = round(safe_div(v["RefSuccess"], (v["RefFail"] + v["RefSuccess"])),2) * 100
-                payment_successrate = round(safe_div(v["PaymSuccess"], (v["PaymFail"] + v["PaymSuccess"])),2) * 100
-                company_success_rate = round(safe_div(ref_successrate+payment_successrate, 2), 2)
+                        instance_summary[comp_key].update(
+                            {f"{paym_fail_key}":  1})
+
+            for k, v in instance_summary.items():
+                ref_successrate = round(
+                    safe_div(v["RefSuccess"], (v["RefFail"] + v["RefSuccess"])), 2) * 100
+                payment_successrate = round(
+                    safe_div(v["PaymSuccess"], (v["PaymFail"] + v["PaymSuccess"])), 2) * 100
+                company_success_rate = round(
+                    safe_div(ref_successrate+payment_successrate, 2), 2)
                 instance_summary[k].update({
                     "RefSuccessRate": ref_successrate,
                     "PaymentSuccessRate": payment_successrate,
@@ -202,10 +235,14 @@ def form_success_report(start_date, end_date):
         else:
             print("No reports on given date range")
 
-    all_data_sorted = OrderedDict(sorted(all_data.items(), key=lambda tup: (tup[1]["TotalSuccessRate"], tup[1]["RefSuccessRate"]), reverse=True))
-    total_ref_success_rate = round(safe_div(total_ref_success, total_ref_success + total_ref_fails), 2) * 100
-    total_payment_success_rate = round(safe_div(total_payments_success, total_payments_success + total_payments_fail), 2) * 100
-    total_success_rate = round(safe_div(total_payment_success_rate + total_ref_success_rate , 2),2)
+    all_data_sorted = OrderedDict(sorted(all_data.items(), key=lambda tup: (
+        tup[1]["TotalSuccessRate"], tup[1]["RefSuccessRate"]), reverse=True))
+    total_ref_success_rate = round(
+        safe_div(total_ref_success, total_ref_success + total_ref_fails), 2) * 100
+    total_payment_success_rate = round(safe_div(
+        total_payments_success, total_payments_success + total_payments_fail), 2) * 100
+    total_success_rate = round(
+        safe_div(total_payment_success_rate + total_ref_success_rate, 2), 2)
     totals = {
         "Total": {
             "total_refs": total_refs,
@@ -241,24 +278,29 @@ def get_unhandled_statements():
 
         companies = get_company_names(v)
         for company in companies:
-            
+
             print("We are getting non handled statements for " + company)
             if tenant_id:
-                statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint + '?tenant=' + tenant_id
+                statement_url = base_url + service_name + '/WS/' + company + '/Page/' + \
+                    config_module.endpoints.statement_endpoint + '?tenant=' + tenant_id
             else:
-                statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint
-        
-            client = open_session(statement_url, api_username, api_pass)
+                statement_url = base_url + service_name + '/WS/' + company + \
+                    '/Page/' + config_module.endpoints.statement_endpoint
+
+            try:
+                client = open_session(statement_url, api_username, api_pass)
+            except Exception as e:
+                error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+                raise Exception(error_message)
 
             filter = [{
                 "Field": "Automation_Handled",
-                "Criteria": False,                
-            },]
-            
-            
+                "Criteria": False,
+            }, ]
+
             statements = client.service.ReadMultiple(filter, None, 1000)
 
-            if statements:   
+            if statements:
                 for statement in statements:
                     statement["Company_Name"] = company
                     all_data.append(statement)
@@ -267,6 +309,7 @@ def get_unhandled_statements():
 
     print("ALL DATA", all_data)
     return all_data
+
 
 def get_balance_difference_statements():
     all_data = []
@@ -284,26 +327,33 @@ def get_balance_difference_statements():
         companies = get_company_names(v)
         for company in companies:
             if tenant_id:
-                statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint + '?tenant=' + tenant_id
+                statement_url = base_url + service_name + '/WS/' + company + '/Page/' + \
+                    config_module.endpoints.statement_endpoint + '?tenant=' + tenant_id
             else:
-                statement_url =  base_url + service_name + '/WS/' + company + '/Page/' + config_module.endpoints.statement_endpoint
-        
-            client = open_session(statement_url, api_username, api_pass)
+                statement_url = base_url + service_name + '/WS/' + company + \
+                    '/Page/' + config_module.endpoints.statement_endpoint
+
+            try:
+                client = open_session(statement_url, api_username, api_pass)
+            except Exception as e:
+                error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+                raise Exception(error_message)
+            
             today = date.today() - timedelta(days=0)
             previous_workday = previous_working_day(today)
 
             filter = [{
                 "Field": "G_L_Account_Balance_Matched",
-                "Criteria": False,                
+                "Criteria": False,
             }, {
                 "Field": "Closing_Balance_Date",
                 "Criteria": f"{previous_workday}"
             }]
-            
+
             print("We are getting non matched statements for " + company)
             statements = client.service.ReadMultiple(filter, None, 1000)
 
-            if statements:   
+            if statements:
                 for statement in statements:
                     statement["Company_Name"] = company
                     all_data.append(statement)
@@ -318,8 +368,8 @@ def get_locations():
     for l in fields(config_module.api_locations):
         locations.append(getattr(config_module.api_locations, l.name))
 
-
     return locations
+
 
 def get_location_names():
     locations = []
@@ -343,11 +393,17 @@ def get_company_names(config):
     print("getting companies for " + service_name)
 
     if tenant_id:
-        settings_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.settings_endpoint + '?tenant=' + tenant_id
+        settings_url = base_url + service_name + '/WS/' + default_company + \
+            '/Page/' + config_module.endpoints.settings_endpoint + '?tenant=' + tenant_id
     else:
-        settings_url = base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.settings_endpoint
+        settings_url = base_url + service_name + '/WS/' + default_company + \
+            '/Page/' + config_module.endpoints.settings_endpoint
 
-    client = open_session(settings_url, api_username, api_pass)
+    try:
+        client = open_session(settings_url, api_username, api_pass)
+    except Exception as e:
+        error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+        raise Exception(error_message)
     filter = {
         "Field": "Company_Name",
         "Criteria": "<>''"
@@ -359,11 +415,12 @@ def get_company_names(config):
 
     return company_names
 
+
 def get_yesterday():
     all_data = []
     configs = get_configs()
     for v in configs.values_list():
-        
+
         base_url = v[2]
         service_name = v[3]
         default_company = html.escape(v[4])
@@ -372,12 +429,19 @@ def get_yesterday():
         api_pass = v[7]
 
         if tenant_id:
-            report_url =  base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
+            report_url = base_url + service_name + '/WS/' + default_company + '/Page/' + \
+                config_module.endpoints.report_endpoint + '?tenant=' + tenant_id
         else:
-            report_url =  base_url + service_name + '/WS/' + default_company + '/Page/' + config_module.endpoints.report_endpoint
-    
+            report_url = base_url + service_name + '/WS/' + default_company + \
+                '/Page/' + config_module.endpoints.report_endpoint
+
         print("current location: " + report_url)
-        client = open_session(report_url, api_username, api_pass)
+
+        try:
+            client = open_session(report_url, api_username, api_pass)
+        except Exception as e:
+            error_message = f"An error occurred while fetching data for {service_name}, please contact bc.tuki@azets.com:\n\n{e}"
+            raise Exception(error_message)
 
         today = date.today() - timedelta(days=0)
         previous_workday = previous_working_day(today)
@@ -392,7 +456,7 @@ def get_yesterday():
         except:
             print("Oops!", sys.exc_info()[0], "occurred.")
         if result:
-            all_data += result 
+            all_data += result
 
     return all_data
 
@@ -406,15 +470,16 @@ def previous_working_day(date):
 
     return previous_working_day(yesterday)
 
-def safe_div(x,y):
+
+def safe_div(x, y):
     if y == 0:
         return 0
     return x / y
 
+
 def main():
     pass
-    
+
 
 if __name__ == '__main__':
     main()
-
